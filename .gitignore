@@ -1,2 +1,13 @@
-
 *.suo
+*.sdf
+*.opensdf
+/main/Debug
+/main/Release
+/main/**/Debug
+/main/**/Release
+/main/**/*.user
+/main/DDDProfiler/DDDProfiler_i.h
+/main/DDDProfiler/DDDProfiler_i.c
+/main/DDDProfiler/DDDProfiler_p.c
+/main/DDDProfiler/dlldata.c
+/main/ipch
