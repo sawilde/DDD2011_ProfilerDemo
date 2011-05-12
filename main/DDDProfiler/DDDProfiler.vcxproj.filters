@@ -60,6 +60,9 @@
     <ClInclude Include="CodeInjection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ProfileBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DDDProfiler.rc">
