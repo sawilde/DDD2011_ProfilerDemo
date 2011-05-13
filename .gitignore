@@ -3,8 +3,10 @@
 *.opensdf
 /main/Debug
 /main/Release
-/main/**/Debug
-/main/**/Release
+/main/**/Debug/
+/main/**/Release/
+/main/**/obj/
+/main/**/bin/
 /main/**/*.user
 /main/DDDProfiler/DDDProfiler_i.h
 /main/DDDProfiler/DDDProfiler_i.c
