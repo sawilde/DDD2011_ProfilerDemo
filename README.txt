@@ -1,1 +1,0 @@
-Demo code for the DDD Melbourne 2011 Profiler Talk
