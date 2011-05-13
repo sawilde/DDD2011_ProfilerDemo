@@ -1,19 +1,13 @@
 // CodeInjection.h : Declaration of the CCodeInjection
-
 #pragma once
 #include "resource.h"       // main symbols
 
-
-
 #include "DDDProfiler_i.h"
-
 #include "ProfileBase.h"
 
 using namespace ATL;
 
-
 // CCodeInjection
-
 class ATL_NO_VTABLE CCodeInjection :
 	public CComObjectRootEx<CComMultiThreadModel>,
 	public CComCoClass<CCodeInjection, &CLSID_CodeInjection>,
@@ -26,7 +20,6 @@ public:
 
 DECLARE_REGISTRY_RESOURCEID(IDR_CODEINJECTION)
 
-
 BEGIN_COM_MAP(CCodeInjection)
 	COM_INTERFACE_ENTRY(ICodeInjection)
     COM_INTERFACE_ENTRY(ICorProfilerCallback)
@@ -34,9 +27,7 @@ BEGIN_COM_MAP(CCodeInjection)
     COM_INTERFACE_ENTRY(ICorProfilerCallback3)
 END_COM_MAP()
 
-
-
-	DECLARE_PROTECT_FINAL_CONSTRUCT()
+    DECLARE_PROTECT_FINAL_CONSTRUCT()
 
 	HRESULT FinalConstruct()
 	{
@@ -48,6 +39,10 @@ END_COM_MAP()
 	}
 
 public:
+    virtual HRESULT STDMETHODCALLTYPE Initialize( 
+        /* [in] */ IUnknown *pICorProfilerInfoUnk);
+        
+    virtual HRESULT STDMETHODCALLTYPE Shutdown( void);
 
 
 
