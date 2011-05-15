@@ -7,6 +7,8 @@
 
 using namespace ATL;
 
+#define COM_FAIL_RETURN(hr, ret) if (!SUCCEEDED(hr)) return (ret)
+
 // CCodeInjection
 class ATL_NO_VTABLE CCodeInjection :
 	public CComObjectRootEx<CComMultiThreadModel>,
@@ -38,12 +40,22 @@ END_COM_MAP()
 	{
 	}
 
+private:
+    CComQIPtr<ICorProfilerInfo3> m_profilerInfo3;
+
 public:
     virtual HRESULT STDMETHODCALLTYPE Initialize( 
         /* [in] */ IUnknown *pICorProfilerInfoUnk);
         
     virtual HRESULT STDMETHODCALLTYPE Shutdown( void);
 
+    virtual HRESULT STDMETHODCALLTYPE ModuleAttachedToAssembly( 
+        /* [in] */ ModuleID moduleId,
+        /* [in] */ AssemblyID assemblyId);
+    
+    virtual HRESULT STDMETHODCALLTYPE JITCompilationStarted( 
+        /* [in] */ FunctionID functionId,
+        /* [in] */ BOOL fIsSafeToBlock);
 
 
 };
