@@ -11,7 +11,8 @@ HRESULT STDMETHODCALLTYPE CCodeInjection::Initialize(
     ATLTRACE(_T("::Initialize - %s"), W2CT(szGuid));
     
     m_profilerInfo3 = pICorProfilerInfoUnk;
-    
+    if (m_profilerInfo3 == NULL) return E_FAIL;
+
     DWORD dwMask = 0;
     dwMask |= COR_PRF_MONITOR_MODULE_LOADS;			// Controls the ModuleLoad, ModuleUnload, and ModuleAttachedToAssembly callbacks.
     dwMask |= COR_PRF_MONITOR_JIT_COMPILATION;	    // Controls the JITCompilation, JITFunctionPitched, and JITInlining callbacks.
