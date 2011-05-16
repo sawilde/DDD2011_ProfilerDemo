@@ -130,6 +130,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ExceptionHandler.cpp" />
+    <ClCompile Include="Instruction.cpp" />
+    <ClCompile Include="Method.cpp" />
+    <ClCompile Include="Operations.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -147,6 +151,11 @@
     <ClInclude Include="CodeInjection.h" />
     <ClInclude Include="DDDProfiler_i.h" />
     <ClInclude Include="dllmain.h" />
+    <ClInclude Include="ExceptionHandler.h" />
+    <ClInclude Include="Instruction.h" />
+    <ClInclude Include="Method.h" />
+    <ClInclude Include="MethodBuffer.h" />
+    <ClInclude Include="Operations.h" />
     <ClInclude Include="ProfileBase.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />

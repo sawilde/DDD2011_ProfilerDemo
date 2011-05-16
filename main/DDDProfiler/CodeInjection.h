@@ -42,6 +42,7 @@ END_COM_MAP()
 
 private:
     CComQIPtr<ICorProfilerInfo3> m_profilerInfo3;
+    std::wstring GetMethodName(FunctionID functionId, ModuleID& moduleId, mdToken& funcToken);
 
 public:
     virtual HRESULT STDMETHODCALLTYPE Initialize( 
