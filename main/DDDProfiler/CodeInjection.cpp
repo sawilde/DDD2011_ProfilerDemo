@@ -32,27 +32,26 @@ HRESULT STDMETHODCALLTYPE CCodeInjection::Shutdown( void)
     return S_OK;
 }
 
-HRESULT CCodeInjection::GetMsCorlibRef(ModuleID moduleId, mdModuleRef &mscorlibRef)
+HRESULT CCodeInjection::GetInjectedRef(ModuleID moduleId, mdModuleRef &mscorlibRef)
 {
     // get interfaces
-    CComPtr<IMetaDataEmit> metaDataEmit;
+    CComPtr<IMetaDataEmit2> metaDataEmit;
     COM_FAIL_RETURN(m_profilerInfo3->GetModuleMetaData(moduleId, 
-        ofRead | ofWrite, IID_IMetaDataEmit, (IUnknown**)&metaDataEmit), S_OK);      
+        ofRead | ofWrite, IID_IMetaDataEmit2, (IUnknown**)&metaDataEmit), S_OK);      
     
     CComPtr<IMetaDataAssemblyEmit> metaDataAssemblyEmit;
     COM_FAIL_RETURN(metaDataEmit->QueryInterface(
         IID_IMetaDataAssemblyEmit, (void**)&metaDataAssemblyEmit), S_OK);
 
-    // find mscorlib
+    // find injected
     ASSEMBLYMETADATA assembly;
     ZeroMemory(&assembly, sizeof(assembly));
-    assembly.usMajorVersion = 4;
+    assembly.usMajorVersion = 1;
     assembly.usMinorVersion = 0;
     assembly.usBuildNumber = 0; 
     assembly.usRevisionNumber = 0;
-    BYTE publicKey[] = { 0xB7, 0x7A, 0x5C, 0x56, 0x19, 0x34, 0xE0, 0x89 };
-    COM_FAIL_RETURN(metaDataAssemblyEmit->DefineAssemblyRef(publicKey, 
-        sizeof(publicKey), L"mscorlib", &assembly, NULL, 0, 0, 
+    COM_FAIL_RETURN(metaDataAssemblyEmit->DefineAssemblyRef(NULL, 
+        0, L"Injected", &assembly, NULL, 0, 0, 
         &mscorlibRef), S_OK);
 }
 
@@ -71,64 +70,31 @@ HRESULT STDMETHODCALLTYPE CCodeInjection::ModuleAttachedToAssembly(
         moduleId, assemblyId, W2CT(szAssemblyName));
 
     if (lstrcmp(L"ProfilerTarget", szAssemblyName) == 0) {
-        m_magicExceptionCtor = 0;
-        // get reference to mscorlib
-        mdModuleRef mscorlibRef;
-        COM_FAIL_RETURN(GetMsCorlibRef(moduleId, mscorlibRef), S_OK);
+        m_targetMethodRef = 0;
+        // get reference to injected
+        mdModuleRef injectedRef;
+        COM_FAIL_RETURN(GetInjectedRef(moduleId, injectedRef), S_OK);
 
         // get interfaces
         CComPtr<IMetaDataEmit> metaDataEmit;
         COM_FAIL_RETURN(m_profilerInfo3->GetModuleMetaData(moduleId, 
             ofRead | ofWrite, IID_IMetaDataEmit, (IUnknown**)&metaDataEmit), S_OK);
 
-        static COR_SIGNATURE ctorCallSignature[] = 
+        static COR_SIGNATURE methodCallSignature[] = 
         {
-            IMAGE_CEE_CS_CALLCONV_DEFAULT | IMAGE_CEE_CS_CALLCONV_HASTHIS,   
-            0x00,                                   
-            ELEMENT_TYPE_VOID
+            IMAGE_CEE_CS_CALLCONV_DEFAULT,   
+            0x01,                                   
+            ELEMENT_TYPE_VOID,
+            ELEMENT_TYPE_I4
         };
 
         // get base type and constructor
-        mdTypeRef exceptionTypeRef;
-        COM_FAIL_RETURN(metaDataEmit->DefineTypeRefByName(mscorlibRef, 
-             L"System.Exception", &exceptionTypeRef), S_OK);
-        mdMemberRef exceptionCtor;
-        COM_FAIL_RETURN(metaDataEmit->DefineMemberRef(exceptionTypeRef, 
-            L".ctor", ctorCallSignature, sizeof(ctorCallSignature), 
-            &exceptionCtor), S_OK);
-
-        // define new type in our module
-        mdTypeDef magicExceptionType;
-        COM_FAIL_RETURN(metaDataEmit->DefineTypeDef(
-            L"DDDMelbourne2011.MagicException", 
-            tdPublic | tdSerializable, exceptionTypeRef, NULL,  
-            &magicExceptionType), S_OK);
-
-        // define constructor 
-        COM_FAIL_RETURN(metaDataEmit->DefineMethod(magicExceptionType, 
-            L".ctor", 
-            mdPublic | mdHideBySig | mdSpecialName | mdRTSpecialName, 
-            ctorCallSignature, sizeof(ctorCallSignature), 0, 
-            miIL | miManaged | miPreserveSig, &m_magicExceptionCtor), S_OK);
-
-        // build and allocate constructor body
-        BYTE data[] = {(0x01 << 2) | CorILMethod_TinyFormat, CEE_RET};
-        Method ctorMethod((IMAGE_COR_ILMETHOD*)data);
-        InstructionList instructions;
-        instructions.push_back(new Instruction(CEE_LDARG_0));
-        instructions.push_back(new Instruction(CEE_CALL, exceptionCtor));
-        ctorMethod.InsertSequenceInstructionsAtOffset(0, instructions);
-        ctorMethod.DumpIL();
-
-        CComPtr<IMethodMalloc> methodMalloc;
-        COM_FAIL_RETURN(m_profilerInfo3->GetILFunctionBodyAllocator(
-            moduleId, &methodMalloc), S_OK);
-
-        void* pMethodBody = methodMalloc->Alloc(ctorMethod.GetMethodSize());
-        ctorMethod.WriteMethod((IMAGE_COR_ILMETHOD*)pMethodBody);
-
-        COM_FAIL_RETURN(m_profilerInfo3->SetILFunctionBody(moduleId, 
-            m_magicExceptionCtor, (LPCBYTE)pMethodBody), S_OK);
+        mdTypeRef classTypeRef;
+        COM_FAIL_RETURN(metaDataEmit->DefineTypeRefByName(injectedRef, 
+             L"Injected.InjectedClass", &classTypeRef), S_OK);
+        COM_FAIL_RETURN(metaDataEmit->DefineMemberRef(classTypeRef, 
+            L"InjectedMethod", methodCallSignature, sizeof(methodCallSignature), 
+            &m_targetMethodRef), S_OK);
     }
 
     return S_OK;
@@ -152,7 +118,21 @@ std::wstring CCodeInjection::GetMethodName(FunctionID functionId,
         szMethodName, dwNameSize, &dwNameSize, NULL, 
         NULL, NULL, NULL, NULL), S_OK);
 
-    return std::wstring(szMethodName);
+   	mdTypeDef typeDef;
+	COM_FAIL_RETURN(m_profilerInfo3->GetClassIDInfo(funcClass, 
+        NULL, &typeDef), std::wstring());
+
+    dwNameSize = 512;
+    WCHAR szClassName[512] = {};
+    DWORD typeDefFlags = 0;
+
+    COM_FAIL_RETURN(metaDataImport2->GetTypeDefProps(typeDef, szClassName, 
+        dwNameSize, &dwNameSize, &typeDefFlags, NULL), std::wstring());
+
+    std::wstring name = szClassName;
+    name += L".";
+    name += szMethodName;
+    return name;
 }
 
 /// <summary>Handle <c>ICorProfilerCallback::JITCompilationStarted</c></summary>
@@ -166,7 +146,8 @@ HRESULT STDMETHODCALLTYPE CCodeInjection::JITCompilationStarted(
     ATLTRACE(_T("::JITCompilationStarted(%X -> %s)"), 
         functionId, W2CT(methodName.c_str()));
 
-    if (L"TargetMethod" == methodName && m_magicExceptionCtor !=0 ) {
+    if (L"ProfilerTarget.Program.TargetMethod" == methodName && 
+        m_targetMethodRef !=0 ) {
         // get method body
         LPCBYTE pMethodHeader = NULL;
         ULONG iMethodSize = 0;
@@ -179,9 +160,9 @@ HRESULT STDMETHODCALLTYPE CCodeInjection::JITCompilationStarted(
 
         // insert new IL block
         InstructionList instructions;
-        instructions.push_back(
-            new Instruction(CEE_NEWOBJ, m_magicExceptionCtor));
-        instructions.push_back(new Instruction(CEE_THROW));
+        instructions.push_back(new Instruction(CEE_LDARG_0));
+        instructions.push_back(new Instruction(CEE_CALL, m_targetMethodRef));
+
         instMethod.InsertSequenceInstructionsAtOriginalOffset(
             1, instructions);
 

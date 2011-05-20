@@ -43,8 +43,8 @@ END_COM_MAP()
 private:
     CComQIPtr<ICorProfilerInfo3> m_profilerInfo3;
     std::wstring GetMethodName(FunctionID functionId, ModuleID& moduleId, mdToken& funcToken);
-    mdMemberRef m_magicExceptionCtor;
-    HRESULT GetMsCorlibRef(ModuleID moduleId, mdModuleRef &mscorlibRef);
+    mdMemberRef m_targetMethodRef;
+    HRESULT GetInjectedRef(ModuleID moduleId, mdModuleRef &mscorlibRef);
 
 public:
     virtual HRESULT STDMETHODCALLTYPE Initialize( 
