@@ -9,7 +9,8 @@ namespace Injected
     {
         public static void InjectedMethod(int i)
         {
-            if (i == 5) throw new SpecialException();
+            if (i == 5) 
+                throw new SpecialException();
         }
     }
 

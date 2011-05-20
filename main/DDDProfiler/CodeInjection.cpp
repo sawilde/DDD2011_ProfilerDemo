@@ -93,8 +93,8 @@ HRESULT STDMETHODCALLTYPE CCodeInjection::ModuleAttachedToAssembly(
         COM_FAIL_RETURN(metaDataEmit->DefineTypeRefByName(injectedRef, 
              L"Injected.InjectedClass", &classTypeRef), S_OK);
         COM_FAIL_RETURN(metaDataEmit->DefineMemberRef(classTypeRef, 
-            L"InjectedMethod", methodCallSignature, sizeof(methodCallSignature), 
-            &m_targetMethodRef), S_OK);
+            L"InjectedMethod", methodCallSignature, 
+            sizeof(methodCallSignature), &m_targetMethodRef), S_OK);
     }
 
     return S_OK;
