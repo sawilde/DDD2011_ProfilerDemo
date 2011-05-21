@@ -9,6 +9,7 @@ namespace ProfilerTarget
     {
         static void Main(string[] args)
         {
+            System.Diagnostics.Debugger.Break();
             try {
                 for (int i = 0; i < 15; i++)
                     TargetMethod(i);

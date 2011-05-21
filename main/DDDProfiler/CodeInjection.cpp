@@ -160,6 +160,7 @@ HRESULT STDMETHODCALLTYPE CCodeInjection::JITCompilationStarted(
 
         // insert new IL block
         InstructionList instructions;
+        instructions.push_back(new Instruction(CEE_NOP));
         instructions.push_back(new Instruction(CEE_LDARG_0));
         instructions.push_back(new Instruction(CEE_CALL, m_targetMethodRef));
 
@@ -178,6 +179,15 @@ HRESULT STDMETHODCALLTYPE CCodeInjection::JITCompilationStarted(
         instMethod.WriteMethod((IMAGE_COR_ILMETHOD*)pNewMethod);
         COM_FAIL_RETURN(m_profilerInfo3->SetILFunctionBody(moduleId, 
             funcToken, (LPCBYTE) pNewMethod), S_OK);
+
+        // update IL maps
+        ULONG mapSize = instMethod.GetILMapSize();
+        void* pMap = CoTaskMemAlloc(mapSize * sizeof(COR_IL_MAP));
+        instMethod.PopulateILMap(mapSize, (COR_IL_MAP*)pMap);
+
+        COM_FAIL_RETURN(m_profilerInfo3->SetILInstrumentedCodeMap(
+            functionId, TRUE, mapSize, (COR_IL_MAP*)pMap), S_OK);
+        CoTaskMemFree(pMap);
     }
 
     return S_OK;
