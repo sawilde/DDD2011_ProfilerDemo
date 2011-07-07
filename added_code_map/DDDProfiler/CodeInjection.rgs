@@ -1,0 +1,15 @@
+HKCR
+{
+	NoRemove CLSID
+	{
+		ForceRemove {BDD57A0C-D4F7-486D-A8CA-86070DC12FA0} = s 'CodeInjection Class'
+		{
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Free'
+			}
+			TypeLib = s '{B8789034-F47B-4920-8D93-FFAF6A753FF5}'
+			Version = s '1.0'
+		}
+	}
+}
