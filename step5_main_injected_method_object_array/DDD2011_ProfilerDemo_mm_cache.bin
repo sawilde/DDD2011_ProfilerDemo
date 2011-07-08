@@ -1,0 +1,1 @@
+FSystem.Void Injected.Logger::OnDoThing(System.Object,System.EventArgs)WSystem.Void ProfilerTarget.Program::OnDoThingInstrument(System.Object,System.EventArgs)
