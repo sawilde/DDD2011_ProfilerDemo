@@ -45,7 +45,8 @@ private:
     std::wstring GetMethodName(FunctionID functionId, ModuleID& moduleId, mdToken& funcToken);
     mdMemberRef m_targetMethodRef;
     HRESULT GetInjectedRef(ModuleID moduleId, mdModuleRef &mscorlibRef);
-
+    HRESULT GetMsCorlibRef(ModuleID moduleId, mdModuleRef &mscorlibRef);
+    mdTypeRef m_objectTypeRef;
 public:
     virtual HRESULT STDMETHODCALLTYPE Initialize( 
         /* [in] */ IUnknown *pICorProfilerInfoUnk);

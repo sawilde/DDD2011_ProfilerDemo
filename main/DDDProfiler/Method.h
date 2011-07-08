@@ -40,7 +40,7 @@ private:
     void WriteSections();
     bool DoesTryHandlerPointToOffset(long offset);
 
-private:
+public:
     // all instrumented methods will be FAT (with FAT SECTIONS if exist) regardless
     IMAGE_COR_ILMETHOD_FAT m_header;
 
