@@ -43,6 +43,8 @@ HRESULT CCodeInjection::GetInjectedRef(ModuleID moduleId, mdModuleRef &mscorlibR
     COM_FAIL_RETURN(metaDataEmit->QueryInterface(
         IID_IMetaDataAssemblyEmit, (void**)&metaDataAssemblyEmit), S_OK);
 
+    // b7 00 eb 9c d7 ae db e6
+    BYTE publicKey[] = { 0xB7, 0x00, 0xEB, 0x9C, 0xD7, 0xAE, 0xDB, 0xE6 };
     // find injected
     ASSEMBLYMETADATA assembly;
     ZeroMemory(&assembly, sizeof(assembly));
@@ -50,8 +52,8 @@ HRESULT CCodeInjection::GetInjectedRef(ModuleID moduleId, mdModuleRef &mscorlibR
     assembly.usMinorVersion = 0;
     assembly.usBuildNumber = 0; 
     assembly.usRevisionNumber = 0;
-    COM_FAIL_RETURN(metaDataAssemblyEmit->DefineAssemblyRef(NULL, 
-        0, L"Injected", &assembly, NULL, 0, 0, 
+    COM_FAIL_RETURN(metaDataAssemblyEmit->DefineAssemblyRef(publicKey, 
+        sizeof(publicKey), L"Injected", &assembly, NULL, 0, 0, 
         &mscorlibRef), S_OK);
 }
 
